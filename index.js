@@ -27,13 +27,19 @@ async function run() {
       .collection("products");
 
     app.get("/products", async (req, res) => {
-      const result = await productsCollection.find().toArray();
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+      const result = await productsCollection
+        .find()
+        .limit(size)
+        .skip(page * size)
+        .toArray();
       res.send(result);
     });
 
     app.get("/products-count", async (req, res) => {
       const count = await productsCollection.countDocuments();
-      res.send({count});
+      res.send({ count });
     });
 
     await client.db("admin").command({ ping: 1 });
