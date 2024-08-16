@@ -32,23 +32,24 @@ async function run() {
       const brandName = req.query.brand;
       const priceValue = req.query.price;
       const dateValue = req.query.date;
+      const searchValue = req.query.search;
       const categoryName = req.query.category;
-      console.log(da)
-      let query = {};
-      let sort = {};
-
+      let query = {
+        productName: { $regex: searchValue, $options: "i" },
+      };
+      let options = {};
       if (brandName) query.brand = brandName;
       if (categoryName) query.category = categoryName;
+      if (priceValue)
+        options = {
+          sort: { price: priceValue === "lowToHigh" ? 1 : -1 },
+        };
 
-      if (priceValue) {
-        sort.price = priceValue === "lowToHigh" ? 1 : -1;
-      }
-      if (dateValue) {
-        sort.createdAt = dateValue === "new" ? -1 : 1;
-      }
+      if (dateValue)
+        options = { sort: { createdAt: dateValue == "new" ? -1 : 1 } };
+      console.log(priceValue);
       const result = await productsCollection
-        .find(query)
-        .sort(sort)
+        .find(query, options)
         .limit(size)
         .skip(page * size)
         .toArray();
@@ -58,11 +59,11 @@ async function run() {
     app.get("/products-count", async (req, res) => {
       const brandName = req.query.brand;
       const categoryName = req.query.category;
+      const searchValue = req.query.search;
+      let query = { productName: { $regex: searchValue, $options: "i" } };
 
-      let query = {};
-
-      if (brandName) query = { brand: brandName };
-      if (categoryName) query = { category: categoryName };
+      if (brandName) query.brand = brandName;
+      if (categoryName) query.category = categoryName;
 
       const count = await productsCollection.countDocuments(query);
       res.send({ count });
