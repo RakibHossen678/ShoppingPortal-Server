@@ -34,12 +34,17 @@ async function run() {
       const dateValue = req.query.date;
       const searchValue = req.query.search;
       const categoryName = req.query.category;
+      const minPrice = parseFloat(req.query.min);
+      const maxPrice = parseFloat(req.query.max);
       let query = {
         productName: { $regex: searchValue, $options: "i" },
       };
       let options = {};
       if (brandName) query.brand = brandName;
       if (categoryName) query.category = categoryName;
+      if (maxPrice && minPrice) {
+        query.price = { $gte: minPrice, $lte: maxPrice };
+      }
       if (priceValue)
         options = {
           sort: { price: priceValue === "lowToHigh" ? 1 : -1 },
@@ -60,10 +65,14 @@ async function run() {
       const brandName = req.query.brand;
       const categoryName = req.query.category;
       const searchValue = req.query.search;
+      const minPrice = parseFloat(req.query.min);
+      const maxPrice = parseFloat(req.query.max);
       let query = { productName: { $regex: searchValue, $options: "i" } };
 
       if (brandName) query.brand = brandName;
       if (categoryName) query.category = categoryName;
+      if (minPrice && maxPrice)
+        query.price = { $gte: minPrice, $lte: maxPrice };
 
       const count = await productsCollection.countDocuments(query);
       res.send({ count });
