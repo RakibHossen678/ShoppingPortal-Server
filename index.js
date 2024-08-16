@@ -31,17 +31,24 @@ async function run() {
       const page = parseInt(req.query.page) - 1;
       const brandName = req.query.brand;
       const priceValue = req.query.price;
+      const dateValue = req.query.date;
       const categoryName = req.query.category;
+      console.log(da)
       let query = {};
-      let options = {};
-      if (brandName) query = { brand: brandName };
-      if (categoryName) query = { category: categoryName };
-      if (priceValue)
-        options = {
-          priceValue: { price: priceValue === "lowToHigh" ? 1 : -1 },
-        };
+      let sort = {};
+
+      if (brandName) query.brand = brandName;
+      if (categoryName) query.category = categoryName;
+
+      if (priceValue) {
+        sort.price = priceValue === "lowToHigh" ? 1 : -1;
+      }
+      if (dateValue) {
+        sort.createdAt = dateValue === "new" ? -1 : 1;
+      }
       const result = await productsCollection
-        .find(query, options)
+        .find(query)
+        .sort(sort)
         .limit(size)
         .skip(page * size)
         .toArray();
