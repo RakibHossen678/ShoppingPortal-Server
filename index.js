@@ -29,8 +29,19 @@ async function run() {
     app.get("/products", async (req, res) => {
       const size = parseInt(req.query.size);
       const page = parseInt(req.query.page) - 1;
+      const brandName = req.query.brand;
+      const priceValue = req.query.price;
+      const categoryName = req.query.category;
+      let query = {};
+      let options = {};
+      if (brandName) query = { brand: brandName };
+      if (categoryName) query = { category: categoryName };
+      if (priceValue)
+        options = {
+          priceValue: { price: priceValue === "lowToHigh" ? 1 : -1 },
+        };
       const result = await productsCollection
-        .find()
+        .find(query, options)
         .limit(size)
         .skip(page * size)
         .toArray();
@@ -38,7 +49,15 @@ async function run() {
     });
 
     app.get("/products-count", async (req, res) => {
-      const count = await productsCollection.countDocuments();
+      const brandName = req.query.brand;
+      const categoryName = req.query.category;
+
+      let query = {};
+
+      if (brandName) query = { brand: brandName };
+      if (categoryName) query = { category: categoryName };
+
+      const count = await productsCollection.countDocuments(query);
       res.send({ count });
     });
 
